@@ -1,12 +1,9 @@
 package org.example;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import user.User;
 import util.HibernateUtil;
-import java.util.List;
+import user.User;
 
 public class Main {
     public static void main(String[] args) {
@@ -14,14 +11,35 @@ public class Main {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
 
-            Long userIdToUpdate = 1L;
+
+            Long userIdToDelete = 1L;
+
+            User userToDelete = session.get(User.class, userIdToDelete);
+
+            if (userToDelete != null) {
+                session.delete(userToDelete);
+                System.out.println("Kullanıcı başarıyla silindi: " + userToDelete.getName() + " (ID: " + userToDelete.getId() + ")");
+            } else {
+                System.out.println("ID " + userIdToDelete + " ile silinecek kullanıcı bulunamadı.");
+            }
+
+            transaction.commit();
+
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+
+            /*Long userIdDelete = 1L;
             User userToUpdate = session.get(User.class, userIdToUpdate);
 
             if (userToUpdate != null) {
 
                 System.out.println("Güncellenecek Kullanıcı (Eski Bilgiler): " + userToUpdate);
-                userToUpdate.setName("Güncel Hilal");
-                userToUpdate.setEmail("guncel.hh@kk.com");
+                userToUpdate.setName(" Hilal");
+                userToUpdate.setEmail("hh@kk.com");
 
                 transaction.commit();
                 System.out.println("Kullanıcı başarıyla güncellendi (Yeni Bilgiler): " + userToUpdate);
@@ -43,7 +61,7 @@ public class Main {
 
 
 
-        /*SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
+        SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
 
