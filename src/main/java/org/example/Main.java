@@ -10,7 +10,40 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            Long userIdToUpdate = 1L;
+            User userToUpdate = session.get(User.class, userIdToUpdate);
+
+            if (userToUpdate != null) {
+
+                System.out.println("Güncellenecek Kullanıcı (Eski Bilgiler): " + userToUpdate);
+                userToUpdate.setName("Güncel Hilal");
+                userToUpdate.setEmail("guncel.hh@kk.com");
+
+                transaction.commit();
+                System.out.println("Kullanıcı başarıyla güncellendi (Yeni Bilgiler): " + userToUpdate);
+
+            } else {
+                System.out.println("ID " + userIdToUpdate + " ile güncellenecek kullanıcı bulunamadı.");
+
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+            }
+
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+
+
+
+        /*SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
 
@@ -31,7 +64,7 @@ public class Main {
 
         transaction.commit();
         session.close();
-        sessionFactory.close();
+        sessionFactory.close();*/
     }
 
 }
