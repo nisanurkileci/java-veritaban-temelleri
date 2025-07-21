@@ -1,21 +1,28 @@
 package org.example;
 
+import dao.UserDAO;
+import dao.UserDAOImpl;
 import model.User;
-import service.UserService;
 
 public class Main {
     public static void main(String[] args) {
-        UserService userService = new UserService();
+        UserDAO userDAO = new UserDAOImpl();
 
-
+        // 1) CREATE
         User user = new User();
         user.setName("Nisa Nur");
-        user.setEmail("nn@n.com");
-        userService.createUser(user);
+        user.setEmail("nisa@nur.com");
+        userDAO.createUser(user);
 
+        // 2) READ
+        User dbUser = userDAO.getUserById(user.getId());
+        System.out.println("DB'den geldi: " + dbUser.getName());
 
-        userService.getAllUsers().forEach(u ->
-                System.out.println(u.getId() + " " + u.getName() + " " + u.getEmail())
-        );
+        // 3) UPDATE
+        dbUser.setEmail("mm@nur.com");
+        userDAO.updateUser(dbUser);
+
+        // 4) DELETE
+        userDAO.deleteUser(dbUser);
     }
 }

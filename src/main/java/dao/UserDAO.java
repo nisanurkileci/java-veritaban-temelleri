@@ -1,18 +1,13 @@
 package dao;
 
-import user.User;
-
+import model.User;
 import java.util.List;
 
 public interface UserDAO {
- void createTable();
-
- void saveUser();
-
- void saveUser(User user);
-
- void deleteUser(int id);
-
- List<User> findAll();
-
+ void createUser(User user);
+ User getUserById(Long id);
+ List<User> getAllUsers();
+ void updateUser(User user);
+ void deleteUser(User user);
 }
+

@@ -1,85 +1,72 @@
 package dao;
 
-import user.User;
+import model.User;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import util.HibernateUtil;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
+import model.User;
+import org.hibernate.Session;
 
-public class UserDAOImpl implements UserDAO{
-    @Override
-    public List<User> findAll() {
-        List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM users";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                User user = new User();
-                user.setId(rs.getInt("id"));
-                user.setName(rs.getString("name"));
-                user.setEmail(rs.getString("email"));
-                users.add(user);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return users;
-    }
-
-    private final Connection connection;
-
-    public UserDAOImpl(Connection connection){
-        this.connection=connection;
-    }
+public class UserDAOImpl implements UserDAO {
 
     @Override
-    public void createTable() {
-        String sql= "CREATE TABLE IF NOT EXISTS users(" + "id SERIAL PRIMARY KEY," +
-                "name VARCHAR(100)," +
-                "email VARCHAR(100))";
-
-        try(Statement statement=connection.createStatement()){
-            statement.execute(sql);
-            System.out.println("Tablo oluşturuldu.");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public void createUser(User user) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            session.save(user);
+            transaction.commit();
+            System.out.println("Kullanıcı eklendi: " + user.getName());
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void saveUser() {
+    public List<User> getAllUsers() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM User", User.class).list();
+        }
+    }
 
+
+    @Override
+    public User getUserById(Long id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            User user = session.get(User.class, id);
+            System.out.println("Kullanıcı bulundu: " + (user != null ? user.getName() : "YOK"));
+            return user;
+        }
     }
 
     @Override
-    public void saveUser(User user) {
-        String sql = " INSERT INTO users(name,email) VALUES(?,?)";
-        try(PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-           preparedStatement.setString(1, user.getName());
-           preparedStatement.setString(2, user.getEmail());
-           preparedStatement.executeUpdate();
-            System.out.println("Veri oluşturuldu");
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public void updateUser(User user) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            session.update(user);
+            transaction.commit();
+            System.out.println("Kullanıcı güncellendi: " + user.getName());
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            e.printStackTrace();
         }
-
     }
 
     @Override
-    public void deleteUser(int id) {
-        String sql = "DELETE FROM users WHERE id=?";
-        try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-            preparedStatement.setInt(1,id);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public void deleteUser(User user) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            session.delete(user);
+            transaction.commit();
+            System.out.println("Kullanıcı silindi: " + user.getName());
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            e.printStackTrace();
         }
-
-
     }
 }
-
-
-
-
